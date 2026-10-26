@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Orbit",
+    "slug": "orbit-browser",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.thedevstars.orbitbrowser"
+    },
+    "android": {
+      "package": "com.thedevstars.orbitbrowser",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "http"
+            },
+            {
+              "scheme": "https"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a wallpaper for Lantern."
+        }
+      ]
+    ]
+  }
+}
