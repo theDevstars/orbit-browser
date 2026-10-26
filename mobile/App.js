@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity as T, Modal, ScrollView, ImageBackground, Switch, Linking, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity as T, Modal, ScrollView, ImageBackground, Switch, Linking, Platform, Image } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as IP from 'expo-image-picker';
@@ -7,7 +7,7 @@ import { startActivityAsync, ActivityAction } from 'expo-intent-launcher';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const D = { accent: '#a78bfa', dark: true, wall: '#101114', img: null, rad: 16, name: '', engine: 'duckduckgo' };
+const D = { accent: '#72cbb5', dark: true, wall: '#101114', img: null, rad: 16, name: '', engine: 'duckduckgo' };
 const WALLS = ['#101114', '#191a20', '#262730', '#e9eaf0', '#f4f4f6', '#e8e2d9'];
 const ACC = ['#a78bfa', '#6ee7d2', '#ff9f80', '#f4ca66', '#83a8ff', '#7885d0'];
 const DM = [['DuckDuckGo', 'https://duckduckgo.com/'], ['YouTube', 'https://www.youtube.com/'], ['GitHub', 'https://github.com/'], ['Reddit', 'https://www.reddit.com/'], ['Figma', 'https://www.figma.com/']];
@@ -33,6 +33,7 @@ function Browser() {
   const [edit, setEdit] = useState(false);
   const [text, setText] = useState('');
   const [showSet, setShowSet] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [showTabs, setShowTabs] = useState(false);
   const [, tick] = useState(0);
   const refs = useRef({});
@@ -44,6 +45,9 @@ function Browser() {
           const j = JSON.parse(v);
           if (j.S) setS({ ...D, ...j.S });
           if (j.marks) setMarks(j.marks);
+          AsyncStorage.getItem('orbit-welcome').then(done => setShowWelcome(done !== 'done')).catch(() => {});
+        } else {
+          setShowWelcome(true);
         }
       })
       .catch(() => {})
@@ -67,6 +71,13 @@ function Browser() {
     return () => sub.remove();
   }, []);
 
+  const chooseWelcome = async style => {
+    if (style === 'zen') setS(s => ({ ...s, dark: true, wall: '#101114', accent: '#72cbb5', rad: 18 }));
+    if (style === 'helium') setS(s => ({ ...s, dark: false, wall: '#f1f0eb', accent: '#72cbb5', rad: 14 }));
+    await AsyncStorage.setItem('orbit-welcome', 'done').catch(() => {});
+    setShowWelcome(false);
+    if (style === 'custom') setShowSet(true);
+  };
   const tab = tabs.find(t => t.id === aid) || tabs[0];
   const up = (id, p) => setTabs(ts => ts.map(t => (t.id === id ? { ...t, ...p } : t)));
   const go = raw => {
@@ -142,8 +153,8 @@ function Browser() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 30, flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
             <View style={{ backgroundColor: glass, borderRadius: S.rad + 6, padding: 22, alignItems: 'stretch' }}>
               <Text style={{ color: muted, fontSize: 11, fontWeight: '600', letterSpacing: 1.4, marginBottom: 12 }}>{date.toUpperCase()}</Text>
-              <Text style={{ color: ink, fontSize: 34, fontWeight: '600', letterSpacing: -1 }}>Search the web</Text>
-              <Text style={{ color: muted, fontSize: 14, marginTop: 6, marginBottom: 18 }}>Find a page or pick up where you left off.</Text>
+              <Text style={{ color: ink, fontSize: 36, fontWeight: '500', letterSpacing: -1.5 }}>Where to?</Text>
+              <Text style={{ color: muted, fontSize: 14, marginTop: 6, marginBottom: 18 }}>Search, or type an address.</Text>
               <TextInput
                 placeholder="Search the web or enter an address"
                 placeholderTextColor={muted}
@@ -168,30 +179,54 @@ function Browser() {
         )}
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: glass, borderRadius: S.rad, marginTop: 6, padding: 5 }}>
-        <Btn l="‹" f={back} off={!tab.uri} />
-        {tab.fwd && <Btn l="›" f={() => refs.current[tab.id]?.goForward()} />}
-        <TextInput
-          value={edit ? text : tab.cur ? host(tab.cur) : ''}
-          onChangeText={setText}
-          onFocus={() => { setText(tab.cur); setEdit(true); }}
-          onBlur={() => setEdit(false)}
-          onSubmitEditing={() => { go(text); setEdit(false); }}
-          placeholder="Search DuckDuckGo or enter address"
-          placeholderTextColor={muted}
-          selectTextOnFocus
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="go"
-          style={{ flex: 1, height: 40, borderRadius: 99, borderWidth: 1, borderColor: line, color: ink, paddingHorizontal: 14, fontSize: 16, textAlign: edit ? 'left' : 'center', marginHorizontal: 4 }}
-        />
-        <Btn l={pinned ? '★' : '☆'} f={star} off={!tab.cur} />
-        <T onPress={() => setShowTabs(true)} style={{ width: 30, height: 30, borderRadius: 9, borderWidth: 2, borderColor: ink, alignItems: 'center', justifyContent: 'center', marginHorizontal: 5 }}>
-          <Text style={{ color: ink, fontWeight: '600', fontSize: 13 }}>{tabs.length}</Text>
-        </T>
-        <Btn l="⚙" f={() => setShowSet(true)} />
+      <View style={{ marginTop: 8, gap: 7 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: glass, borderRadius: 22, padding: 5, borderWidth: 1, borderColor: line }}>
+          <Image source={require('./assets/icon.png')} style={{ width: 28, height: 28, borderRadius: 10, marginHorizontal: 5 }} />
+          <TextInput
+            value={edit ? text : tab.cur ? host(tab.cur) : ''}
+            onChangeText={setText}
+            onFocus={() => { setText(tab.cur); setEdit(true); }}
+            onBlur={() => setEdit(false)}
+            onSubmitEditing={() => { go(text); setEdit(false); }}
+            placeholder={S.engine === 'brave' ? 'Search Brave Search or enter address' : 'Search DuckDuckGo or enter address'}
+            placeholderTextColor={muted}
+            selectTextOnFocus
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="go"
+            style={{ flex: 1, height: 42, color: ink, paddingHorizontal: 8, fontSize: 16, textAlign: edit ? 'left' : 'center', marginHorizontal: 3 }}
+          />
+          <T onPress={() => setShowTabs(true)} style={{ width: 36, height: 36, borderRadius: 13, backgroundColor: S.accent, alignItems: 'center', justifyContent: 'center', marginRight: 2 }}>
+            <Text style={{ color: '#10221d', fontWeight: '700', fontSize: 13 }}>{tabs.length}</Text>
+          </T>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', backgroundColor: glass, borderRadius: 18, paddingHorizontal: 6, paddingVertical: 3, borderWidth: 1, borderColor: line }}>
+          <Btn l="‹" f={back} off={!tab.uri} />
+          <Btn l="›" f={() => refs.current[tab.id]?.goForward()} off={!tab.fwd} />
+          <Btn l="↻" f={() => refs.current[tab.id]?.reload()} off={!tab.uri} />
+          <Btn l={pinned ? '★' : '☆'} f={star} off={!tab.cur} />
+          <Btn l="+" f={newTab} />
+          <Btn l="☷" f={() => setShowSet(true)} />
+        </View>
       </View>
 
+      <Modal visible={showWelcome} animationType="fade" onRequestClose={() => {}}>
+        <View style={{ flex: 1, backgroundColor: dk ? '#141816' : '#f1f0eb', paddingTop: ins.top + 28, paddingHorizontal: 22, paddingBottom: ins.bottom + 24, justifyContent: 'center' }}>
+          <Image source={require('./assets/icon.png')} style={{ width: 54, height: 54, borderRadius: 17, marginBottom: 24 }} />
+          <Text style={{ color: ink, fontSize: 29, fontWeight: '600', letterSpacing: -0.7 }}>How would you like to customize Orbit?</Text>
+          <Text style={{ color: muted, fontSize: 15, lineHeight: 22, marginTop: 10, marginBottom: 25 }}>Pick a starting point. You can change everything later.</Text>
+          {[
+            ['zen', 'Zen', 'Quiet, dark, and focused'],
+            ['helium', 'Helium', 'Bright, light, and open'],
+            ['custom', 'Customize yourself', 'Choose your own look and layout']
+          ].map(([id, title, detail]) => (
+            <T key={id} onPress={() => chooseWelcome(id)} style={{ padding: 16, borderRadius: 15, marginBottom: 10, borderWidth: 1, borderColor: line, backgroundColor: glass }}>
+              <Text style={{ color: ink, fontSize: 16, fontWeight: '600' }}>{title}</Text>
+              <Text style={{ color: muted, fontSize: 13, marginTop: 5 }}>{detail}</Text>
+            </T>
+          ))}
+        </View>
+      </Modal>
       <Modal visible={showTabs} animationType="slide" onRequestClose={() => setShowTabs(false)}>
         <View style={{ flex: 1, backgroundColor: dk ? '#14151f' : '#f6f7fb', paddingTop: ins.top + 14, paddingHorizontal: 14, paddingBottom: ins.bottom + 14 }}>
           <T onPress={() => setShowTabs(false)} style={{ alignSelf: 'flex-end', padding: 10 }}><Text style={{ color: S.accent, fontSize: 17, fontWeight: '600' }}>Done</Text></T>

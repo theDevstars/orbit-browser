@@ -1,6 +1,6 @@
 {
   "name": "orbit-browser-desktop",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Orbit Browser for Windows",
   "author": "theDevstars",
   "main": "main.js",
@@ -18,7 +18,8 @@
     "files": [
       "main.js",
       "preload.js",
-      "index.html"
+      "index.html",
+      "assets/icon.png"
     ],
     "win": {
       "target": [

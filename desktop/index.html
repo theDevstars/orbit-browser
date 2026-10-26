@@ -6,10 +6,10 @@
 <title>Orbit Browser</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--g:255,255,255;--ink:#1c1c1e;--muted:#6b6b73;--line:rgba(60,60,67,.16);--accent:#a78bfa;--on:#17131f;--ga:.7;--panel:#f7f7f8;--rad:12px;--gap:8px;--sw:250px;
+:root{--g:255,255,255;--ink:#1c1c1e;--muted:#6b6b73;--line:rgba(60,60,67,.16);--accent:#72cbb5;--on:#10221d;--ga:.7;--panel:#f7f7f8;--rad:12px;--gap:8px;--sw:250px;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--g:24,24,27;--ink:#ededf0;--muted:#9a9aa3;--panel:#1b1b1f;--accent:#a78bfa;--on:#17131f}}
-:root[data-theme="dark"]{--g:24,24,27;--ink:#ededf0;--muted:#9a9aa3;--panel:#1b1b1f;--accent:#d4d4d8;--on:#18181b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--g:24,24,27;--ink:#ededf0;--muted:#9a9aa3;--panel:#1b1b1f;--accent:#72cbb5;--on:#10221d}}
+:root[data-theme="dark"]{--g:24,24,27;--ink:#ededf0;--muted:#9a9aa3;--panel:#1b1b1f;--accent:#8cd8c5;--on:#10221d}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{color:var(--ink);font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;background:#222}
@@ -119,7 +119,7 @@ webview{position:absolute;inset:0;width:100%;height:100%;background:#fff}
 #app{display:grid;grid-template-columns:var(--sw) minmax(0,1fr);height:100%;padding:10px;gap:10px}
 #side{display:flex;flex-direction:column;gap:10px;padding:14px 10px;border-radius:16px;min-width:0;min-height:0;background:rgba(var(--g),.9)}
 #brand{display:flex;align-items:center;gap:9px;padding:2px 8px 10px;color:var(--ink);font-size:16px;letter-spacing:.2px}
-.brand-mark{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:var(--accent);color:var(--on);font-size:15px}
+.brand-mark{display:block;width:27px;height:27px;border-radius:9px;object-fit:cover;flex:none}
 .side-label{padding:6px 9px 0;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:1.2px}
 #ws{display:flex;flex-direction:column;gap:3px}
 .w{width:100%;display:flex;align-items:center;text-align:left;gap:9px;padding:9px;border-radius:10px;opacity:.78}
@@ -181,6 +181,19 @@ html[data-pos=bottom] #tw{flex-direction:row}
   .card{padding:26px 16px}
   #sites{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+#welcome{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:24px;background:rgba(14,16,18,.76);backdrop-filter:blur(16px)}
+#welcome.open{display:grid}
+.welcome-card{width:min(520px,100%);padding:32px;border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 80px rgba(0,0,0,.3)}
+.welcome-card>img{border-radius:15px;margin-bottom:18px}
+.welcome-kicker{margin:0 0 8px;color:var(--muted);font-size:10px;letter-spacing:1.5px;font-weight:600}
+#welcome-title{margin:0;font-size:clamp(26px,4vw,34px);line-height:1.12;letter-spacing:-.8px;font-weight:600}
+.welcome-copy{margin:10px 0 24px;color:var(--muted);font-size:14px}
+.welcome-options{display:grid;gap:9px}
+.welcome-option{display:flex;flex-direction:column;gap:4px;padding:14px 16px;text-align:left;border:1px solid var(--line);border-radius:14px;background:rgba(var(--g),.65);color:var(--ink);font:inherit;cursor:pointer}
+.welcome-option:hover{border-color:var(--accent);background:rgba(var(--g),.95)}
+.welcome-option strong{font-size:14px;font-weight:600}
+.welcome-option span{color:var(--muted);font-size:12px}
+@media(max-width:520px){.welcome-card{padding:24px 18px;border-radius:18px}}
 </style>
 </head>
 <body>
@@ -188,7 +201,7 @@ html[data-pos=bottom] #tw{flex-direction:row}
 <button class="ib glass" id="peek" aria-label="Show sidebar">☰</button>
 <div id="app">
   <aside id="side" class="glass">
-    <div id="brand"><span class="brand-mark">◉</span><strong>orbit</strong></div>
+    <div id="brand"><img class="brand-mark" src="assets/icon.png" alt=""><strong>orbit</strong></div>
     <div class="side-label">WORKSPACES</div><div id="ws"></div>
     <div class="side-label pinned-label">PINNED</div><div id="ess"></div>
     <div class="side-label tabs-label">TABS</div>
@@ -197,12 +210,25 @@ html[data-pos=bottom] #tw{flex-direction:row}
   <main id="main">
     <div id="top" class="glass">
       <button class="ib" id="back" aria-label="Back">←</button><button class="ib" id="fwd" aria-label="Forward">→</button><button class="ib" id="reload" aria-label="Reload">↻</button>
-      <input id="url" type="text" placeholder="Search DuckDuckGo or enter address" aria-label="Address bar" autocapitalize="off" autocomplete="off">
+      <input id="url" type="text" placeholder="Search the web or enter address" aria-label="Address bar" autocapitalize="off" autocomplete="off">
       <button class="ib" id="star" aria-label="Bookmark this page">☆</button><button class="ib" id="tc" aria-label="Show tabs">1</button><button class="ib" id="gear" aria-label="Customize">⚙</button><button class="ib" id="hide" aria-label="Hide sidebar">⇤</button>
     </div><div id="view"></div>
   </main>
 </div>
 
+<div id="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+  <div class="welcome-card">
+    <img src="assets/icon.png" alt="" width="48" height="48">
+    <p class="welcome-kicker">ORBIT BROWSER</p>
+    <h1 id="welcome-title">How would you like to customize Orbit?</h1>
+    <p class="welcome-copy">Pick a starting point. You can change everything later.</p>
+    <div class="welcome-options">
+      <button class="welcome-option" data-style="zen"><strong>Zen</strong><span>Quiet, dark, and focused</span></button>
+      <button class="welcome-option" data-style="helium"><strong>Helium</strong><span>Bright, light, and open</span></button>
+      <button class="welcome-option" data-style="custom"><strong>Customize yourself</strong><span>Choose your own look and layout</span></button>
+    </div>
+  </div>
+</div>
 <aside id="set" aria-label="Customize" aria-hidden="true">
 <h2>Customize <button class="ib" id="close" aria-label="Close">✕</button></h2>
 <h3>SEARCH ENGINE</h3><div class="row" id="engines"></div>
@@ -344,6 +370,14 @@ $("back").innerHTML=SV('<path d="M15 6l-6 6 6 6"/>');$("fwd").innerHTML=SV('<pat
 if(window.orbit&&window.orbit.defaults){var db=document.createElement("button");db.className="chip";db.textContent="Set as default browser";db.onclick=window.orbit.defaults;$("reset").parentNode.appendChild(db)}
 if(window.orbit)window.orbit.onOpen(function(u){if(W.c&&!W.c.h[W.c.i])go(u);else newTab(u)});
 newTab();apply();
+function finishWelcome(style){
+ if(style==="zen"){S.wall={k:"p",v:2};S.dim=0;S.blur=0;S.glass=80;S.theme="dark";S.accent="#72cbb5";S.rad=16;S.gap=8;S.pos="left"}
+ if(style==="helium"){S.wall={k:"p",v:0};S.dim=0;S.blur=0;S.glass=90;S.theme="light";S.accent="#72cbb5";S.rad=14;S.gap=10;S.pos="left"}
+ if(style==="custom"){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")}
+ localStorage.setItem("orbit-welcome","done");$("welcome").classList.remove("open");apply()
+}
+[].forEach.call(document.querySelectorAll(".welcome-option"),function(b){b.onclick=function(){finishWelcome(b.dataset.style)}});
+if(!localStorage.getItem("orbit-welcome"))$("welcome").classList.add("open");
 </script>
 </body>
 </html>
