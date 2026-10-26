@@ -194,6 +194,14 @@ html[data-pos=bottom] #tw{flex-direction:row}
 .welcome-option strong{font-size:14px;font-weight:600}
 .welcome-option span{color:var(--muted);font-size:12px}
 @media(max-width:520px){.welcome-card{padding:24px 18px;border-radius:18px}}
+.settings-nav{position:sticky;top:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:14px -4px 6px;padding:6px 4px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.settings-nav .chip{padding:7px 5px;font-size:11px;border-radius:9px;white-space:nowrap}
+.settings-page[hidden]{display:none}
+.settings-page h3{margin-top:20px}
+.setting-note{color:var(--muted);font-size:.82rem;line-height:1.5;margin:6px 0 12px}
+#set input[type=text]{margin-top:8px}
+#showWelcome{width:100%}
+@media(max-width:360px){.settings-nav .chip{font-size:10px;padding:6px 3px}}
 </style>
 </head>
 <body>
@@ -229,30 +237,51 @@ html[data-pos=bottom] #tw{flex-direction:row}
     </div>
   </div>
 </div>
-<aside id="set" aria-label="Customize" aria-hidden="true">
-<h2>Customize <button class="ib" id="close" aria-label="Close">✕</button></h2>
+<aside id="set" aria-label="Settings" aria-hidden="true">
+<h2>Settings <button class="ib" id="close" aria-label="Close">✕</button></h2>
+<div class="settings-nav" role="tablist" aria-label="Settings sections">
+<button class="chip on" data-settings-tab="general">General</button><button class="chip" data-settings-tab="appearance">Appearance</button><button class="chip" data-settings-tab="start">Start page</button><button class="chip" data-settings-tab="browser">Browser</button>
+</div>
+<section class="settings-page" data-settings-page="general">
 <h3>SEARCH ENGINE</h3><div class="row" id="engines"></div>
-<h3>THEMES</h3><div class="row" id="themes"></div>
+<p class="setting-note">Choose which search provider Orbit uses when you type words in the address bar.</p>
+<h3>DEFAULT BROWSER</h3><p class="setting-note">Choose Orbit for web links in Windows Default Apps.</p><div class="row"><button class="chip" id="defaultBrowser">Open Windows Default Apps</button></div>
+</section>
+<section class="settings-page" data-settings-page="appearance" hidden>
+<h3>THEME</h3><div class="row" id="themes"></div>
 <h3>WALLPAPER</h3><div class="row" id="presets"></div>
 <div class="row" style="margin-top:10px"><button class="chip" id="upl">Upload photo</button><input type="file" id="file" accept="image/*" hidden><input type="color" id="solid" aria-label="Solid color wallpaper" value="#2a2f55"></div>
 <label>Darken <span id="dv"></span></label><input type="range" id="dim_r" min="0" max="70">
 <label>Blur <span id="bv"></span></label><input type="range" id="blur_r" min="0" max="20">
-<h3>TAB BAR POSITION</h3><div class="row" id="pos"></div>
+<h3>LAYOUT</h3><div class="row" id="pos"></div>
 <label>Sidebar width <span id="sv"></span></label><input type="range" id="sw_r" min="190" max="360">
-<h3>LOOK</h3><div class="row" id="modes"></div>
+<h3>DETAILS</h3><div class="row" id="modes"></div>
 <label>Corner radius <span id="rv"></span></label><input type="range" id="rad_r" min="0" max="28">
 <label>Spacing <span id="pv"></span></label><input type="range" id="gap_r" min="0" max="16">
-<label>Glass opacity <span id="gv"></span></label><input type="range" id="glass_r" min="15" max="96">
-<h3>ACCENT COLOR</h3><div class="row" id="accents"></div>
-<h3>DEFAULT BROWSER</h3><p style="color:var(--muted);font-size:.82rem;line-height:1.5">Choose Orbit for web links in Windows Default Apps.</p><div class="row"><button class="chip" id="defaultBrowser">Open Windows Default Apps</button></div>
-<h3>START PAGE</h3>
-<input type="text" id="name" placeholder="Your name" aria-label="Your name">
-<div class="row" style="margin-top:10px"><button class="chip" id="clk">Show clock</button><button class="chip" id="reset">Reset all</button></div>
+<label>Panel opacity <span id="gv"></span></label><input type="range" id="glass_r" min="15" max="96">
+<h3>ACCENT</h3><div class="row" id="accents"></div>
+</section>
+<section class="settings-page" data-settings-page="start" hidden>
+<h3>NEW TAB</h3><label for="name">Greeting name</label><input type="text" id="name" placeholder="Your name" aria-label="Your name">
+<div class="row" style="margin-top:12px"><button class="chip" id="clk">Show clock</button></div>
+<p class="setting-note">The date updates automatically. Your pinned sites stay in the sidebar.</p>
+<div class="row" style="margin-top:18px"><button class="chip" id="reset">Reset settings</button></div>
+</section>
+<section class="settings-page" data-settings-page="browser" hidden>
+<h3>FIRST LAUNCH</h3><p class="setting-note">You can open the Zen, Helium, and custom setup choices again at any time.</p>
+<div class="row"><button class="chip" id="showWelcome">Show setup choices</button></div>
+</section>
 <div id="st" role="status"></div>
 </aside>
 
 <script>
 var $=function(i){return document.getElementById(i)},R=document.documentElement;
+function settingsPage(name){
+[].forEach.call(document.querySelectorAll("[data-settings-page]"),function(p){p.hidden=p.dataset.settingsPage!==name});
+[].forEach.call(document.querySelectorAll("[data-settings-tab]"),function(b){b.classList.toggle("on",b.dataset.settingsTab===name)});
+}
+[].forEach.call(document.querySelectorAll("[data-settings-tab]"),function(b){b.onclick=function(){settingsPage(b.dataset.settingsTab)}});
+$("showWelcome").onclick=function(){$("set").classList.remove("open");$("welcome").classList.add("open")};
 function SV(i,f){return '<svg viewBox="0 0 24 24" width="18" height="18" fill="'+(f||"none")+'" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+i+'</svg>'}
 var STAR='<path d="M12 4l2.4 5 5.4.7-4 3.8 1 5.4-4.8-2.6-4.8 2.6 1-5.4-4-3.8 5.4-.7z"/>',GEAR='<path d="M4 7h9m4 0h3M4 17h3m4 0h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',SIDE='<rect x="4" y="5" width="16" height="14" rx="3"/><path d="M9 5v14"/>';
 var P=["linear-gradient(135deg,#d9dce3,#b9bec9)","linear-gradient(160deg,#e8e4de,#c9c3ba)","linear-gradient(160deg,#2b2d33,#16171b)","linear-gradient(135deg,#aab4aa,#7d887d)","linear-gradient(135deg,#3b4252,#232833)","linear-gradient(135deg,#9ea7b3,#6f7a88)","linear-gradient(160deg,#f1f0ee,#dcdad6)"];
@@ -303,7 +332,7 @@ $("solid").oninput=function(){S.wall={k:"c",v:this.value};apply()};
 $("name").oninput=function(){S.name=this.value.slice(0,30);persist();if(!W.c.h[W.c.i])view()};
 $("clk").onclick=function(){S.clock=!S.clock;apply()};
 $("reset").onclick=function(){S=Object.assign({},D);apply()};
-$("gear").onclick=function(){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")};
+$("gear").onclick=function(){settingsPage("general");$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")};
 $("defaultBrowser").onclick=function(){if(window.orbit){window.orbit.defaults()}else{$("st").textContent="Open Windows Settings → Apps → Default apps to choose Orbit."}};
 $("close").onclick=function(){$("set").classList.remove("open");$("set").setAttribute("aria-hidden","true")};
 $("hide").onclick=function(){S.hide=true;apply()};
@@ -373,11 +402,11 @@ newTab();apply();
 function finishWelcome(style){
  if(style==="zen"){S.wall={k:"p",v:2};S.dim=0;S.blur=0;S.glass=80;S.theme="dark";S.accent="#72cbb5";S.rad=16;S.gap=8;S.pos="left"}
  if(style==="helium"){S.wall={k:"p",v:0};S.dim=0;S.blur=0;S.glass=90;S.theme="light";S.accent="#72cbb5";S.rad=14;S.gap=10;S.pos="left"}
- if(style==="custom"){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")}
- localStorage.setItem("orbit-welcome","done");$("welcome").classList.remove("open");apply()
+ if(style==="custom"){settingsPage("appearance");$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")}
+ localStorage.setItem("orbit-welcome-v3","done");$("welcome").classList.remove("open");apply()
 }
 [].forEach.call(document.querySelectorAll(".welcome-option"),function(b){b.onclick=function(){finishWelcome(b.dataset.style)}});
-if(!localStorage.getItem("orbit-welcome"))$("welcome").classList.add("open");
+if(!localStorage.getItem("orbit-welcome-v3"))$("welcome").classList.add("open");
 </script>
 </body>
 </html>

@@ -33,6 +33,7 @@ function Browser() {
   const [edit, setEdit] = useState(false);
   const [text, setText] = useState('');
   const [showSet, setShowSet] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('general');
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTabs, setShowTabs] = useState(false);
   const [, tick] = useState(0);
@@ -45,7 +46,7 @@ function Browser() {
           const j = JSON.parse(v);
           if (j.S) setS({ ...D, ...j.S });
           if (j.marks) setMarks(j.marks);
-          AsyncStorage.getItem('orbit-welcome').then(done => setShowWelcome(done !== 'done')).catch(() => {});
+          AsyncStorage.getItem('orbit-welcome-v3').then(done => setShowWelcome(done !== 'done')).catch(() => {});
         } else {
           setShowWelcome(true);
         }
@@ -74,9 +75,9 @@ function Browser() {
   const chooseWelcome = async style => {
     if (style === 'zen') setS(s => ({ ...s, dark: true, wall: '#101114', accent: '#72cbb5', rad: 18 }));
     if (style === 'helium') setS(s => ({ ...s, dark: false, wall: '#f1f0eb', accent: '#72cbb5', rad: 14 }));
-    await AsyncStorage.setItem('orbit-welcome', 'done').catch(() => {});
+    await AsyncStorage.setItem('orbit-welcome-v3', 'done').catch(() => {});
     setShowWelcome(false);
-    if (style === 'custom') setShowSet(true);
+    if (style === 'custom') { setSettingsTab('appearance'); setShowSet(true); }
   };
   const tab = tabs.find(t => t.id === aid) || tabs[0];
   const up = (id, p) => setTabs(ts => ts.map(t => (t.id === id ? { ...t, ...p } : t)));
@@ -153,6 +154,7 @@ function Browser() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 30, flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
             <View style={{ backgroundColor: glass, borderRadius: S.rad + 6, padding: 22, alignItems: 'stretch' }}>
               <Text style={{ color: muted, fontSize: 11, fontWeight: '600', letterSpacing: 1.4, marginBottom: 12 }}>{date.toUpperCase()}</Text>
+              <Text style={{ color: S.accent, fontSize: 13, fontWeight: '600', marginBottom: 8 }}>{greet}</Text>
               <Text style={{ color: ink, fontSize: 36, fontWeight: '500', letterSpacing: -1.5 }}>Where to?</Text>
               <Text style={{ color: muted, fontSize: 14, marginTop: 6, marginBottom: 18 }}>Search, or type an address.</Text>
               <TextInput
@@ -206,7 +208,7 @@ function Browser() {
           <Btn l="↻" f={() => refs.current[tab.id]?.reload()} off={!tab.uri} />
           <Btn l={pinned ? '★' : '☆'} f={star} off={!tab.cur} />
           <Btn l="+" f={newTab} />
-          <Btn l="☷" f={() => setShowSet(true)} />
+          <Btn l="☷" f={() => { setSettingsTab('general'); setShowSet(true); }} />
         </View>
       </View>
 
@@ -245,39 +247,63 @@ function Browser() {
       <Modal visible={showSet} animationType="slide" onRequestClose={() => setShowSet(false)}>
         <ScrollView style={{ flex: 1, backgroundColor: dk ? '#14151f' : '#f6f7fb' }} contentContainerStyle={{ padding: 18, paddingTop: ins.top + 14, paddingBottom: ins.bottom + 30 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ color: ink, fontSize: 20, fontWeight: '600' }}>Customize</Text>
+            <Text style={{ color: ink, fontSize: 22, fontWeight: '600' }}>Settings</Text>
             <T onPress={() => setShowSet(false)} style={{ padding: 10 }}><Text style={{ color: S.accent, fontSize: 17, fontWeight: '600' }}>Done</Text></T>
           </View>
-          {Platform.OS === 'android' && <View>
-            <H t="DEFAULT BROWSER" />
-            <Text style={{ color: muted, fontSize: 13, lineHeight: 20, marginBottom: 10 }}>Choose Orbit under Android Settings → Apps → Default apps → Browser app.</Text>
-            <Chip l="Choose Orbit as default" f={() => startActivityAsync(ActivityAction.MANAGE_DEFAULT_APPS_SETTINGS).catch(() => Linking.openSettings())} />
+          <View style={{ flexDirection: 'row', gap: 6, marginTop: 18, marginBottom: 10 }}>
+            {[
+              ['general', 'General'],
+              ['appearance', 'Appearance'],
+              ['start', 'Start page']
+            ].map(([id, label]) => (
+              <T key={id} onPress={() => setSettingsTab(id)} style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 12, backgroundColor: settingsTab === id ? S.accent : glass }}>
+                <Text style={{ color: settingsTab === id ? '#10221d' : ink, fontSize: 12, fontWeight: '600' }}>{label}</Text>
+              </T>
+            ))}
+          </View>
+          {settingsTab === 'general' && <View>
+            {Platform.OS === 'android' && <View style={{ marginBottom: 12 }}>
+              <H t="DEFAULT BROWSER" />
+              <Text style={{ color: muted, fontSize: 13, lineHeight: 20, marginBottom: 10 }}>Choose Orbit under Android Settings → Apps → Default apps → Browser app.</Text>
+              <Chip l="Choose Orbit as default" f={() => startActivityAsync(ActivityAction.MANAGE_DEFAULT_APPS_SETTINGS).catch(() => Linking.openSettings())} />
+            </View>}
+            <H t="SEARCH ENGINE" />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              <Chip l="DuckDuckGo" on={S.engine === 'duckduckgo'} f={() => setS({ ...S, engine: 'duckduckgo' })} />
+              <Chip l="Brave Search" on={S.engine === 'brave'} f={() => setS({ ...S, engine: 'brave' })} />
+            </View>
+            <H t="FIRST LAUNCH" />
+            <Text style={{ color: muted, fontSize: 13, lineHeight: 20, marginBottom: 10 }}>Choose a starter style again, or change any setting here.</Text>
+            <Chip l="Show setup choices" f={() => { setShowSet(false); setShowWelcome(true); }} />
           </View>}
-          <H t="SEARCH ENGINE" />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <Chip l="DuckDuckGo" on={S.engine === 'duckduckgo'} f={() => setS({ ...S, engine: 'duckduckgo' })} />
-            <Chip l="Brave Search" on={S.engine === 'brave'} f={() => setS({ ...S, engine: 'brave' })} />
-          </View>
-          <H t="DARK MODE" />
-          <Switch value={dk} onValueChange={v => setS({ ...S, dark: v })} trackColor={{ true: S.accent }} />
-          <H t="WALLPAPER" />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {WALLS.map(c => <Sw key={c} c={c} on={!S.img && S.wall === c} f={() => setS({ ...S, wall: c, img: null })} />)}
-          </View>
-          <Chip l="Choose photo" f={pick} />
-          <H t="ACCENT COLOR" />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {ACC.map(c => <Sw key={c} c={c} on={S.accent === c} f={() => setS({ ...S, accent: c })} />)}
-          </View>
-          <H t="CORNER RADIUS" />
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Chip l="−" f={() => setS({ ...S, rad: Math.max(0, S.rad - 4) })} />
-            <Text style={{ color: ink, marginRight: 14, marginBottom: 8 }}>{S.rad}</Text>
-            <Chip l="+" f={() => setS({ ...S, rad: Math.min(28, S.rad + 4) })} />
-          </View>
-          <H t="START PAGE" />
-          <TextInput value={S.name} onChangeText={v => setS({ ...S, name: v.slice(0, 30) })} placeholder="Your name" placeholderTextColor={muted} style={{ height: 44, borderRadius: 10, borderWidth: 1, borderColor: line, color: ink, paddingHorizontal: 12, fontSize: 16 }} />
-          <View style={{ marginTop: 20 }}><Chip l="Reset all" f={() => setS(D)} /></View>
+          {settingsTab === 'appearance' && <View>
+            <H t="THEME" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 }}>
+              <Text style={{ color: ink, fontSize: 15 }}>Dark appearance</Text>
+              <Switch value={dk} onValueChange={v => setS({ ...S, dark: v })} trackColor={{ true: S.accent }} />
+            </View>
+            <H t="WALLPAPER" />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {WALLS.map(c => <Sw key={c} c={c} on={!S.img && S.wall === c} f={() => setS({ ...S, wall: c, img: null })} />)}
+            </View>
+            <Chip l="Choose photo" f={pick} />
+            <H t="ACCENT COLOR" />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {ACC.map(c => <Sw key={c} c={c} on={S.accent === c} f={() => setS({ ...S, accent: c })} />)}
+            </View>
+            <H t="CORNER RADIUS" />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Chip l="−" f={() => setS({ ...S, rad: Math.max(0, S.rad - 4) })} />
+              <Text style={{ color: ink, marginRight: 14, marginBottom: 8 }}>{S.rad}</Text>
+              <Chip l="+" f={() => setS({ ...S, rad: Math.min(28, S.rad + 4) })} />
+            </View>
+          </View>}
+          {settingsTab === 'start' && <View>
+            <H t="NEW TAB" />
+            <TextInput value={S.name} onChangeText={v => setS({ ...S, name: v.slice(0, 30) })} placeholder="Your name" placeholderTextColor={muted} style={{ height: 46, borderRadius: 12, borderWidth: 1, borderColor: line, color: ink, paddingHorizontal: 14, fontSize: 16 }} />
+            <Text style={{ color: muted, fontSize: 13, lineHeight: 20, marginTop: 10 }}>Your name appears in the greeting on a new tab.</Text>
+            <View style={{ marginTop: 18 }}><Chip l="Reset appearance and start page" f={() => setS(D)} /></View>
+          </View>}
         </ScrollView>
       </Modal>
     </ImageBackground>
