@@ -1,24 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity as T, Modal, ScrollView, ImageBackground, Switch, Linking } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity as T, Modal, ScrollView, ImageBackground, Switch, Linking, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as IP from 'expo-image-picker';
+import { startActivityAsync, ActivityAction } from 'expo-intent-launcher';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const D = { accent: '#a78bfa', dark: true, wall: '#101114', img: null, rad: 16, name: '' };
+const D = { accent: '#a78bfa', dark: true, wall: '#101114', img: null, rad: 16, name: '', engine: 'duckduckgo' };
 const WALLS = ['#101114', '#191a20', '#262730', '#e9eaf0', '#f4f4f6', '#e8e2d9'];
 const ACC = ['#a78bfa', '#6ee7d2', '#ff9f80', '#f4ca66', '#83a8ff', '#7885d0'];
 const DM = [['DuckDuckGo', 'https://duckduckgo.com/'], ['YouTube', 'https://www.youtube.com/'], ['GitHub', 'https://github.com/'], ['Reddit', 'https://www.reddit.com/'], ['Figma', 'https://www.figma.com/']];
 let nid = 1;
 const mkTab = () => ({ id: nid++, uri: '', cur: '', title: 'New tab', back: false, fwd: false });
 const host = u => u.replace(/^https?:\/\/(www\.)?/, '').split(/[/?#]/)[0];
-const norm = s => {
+const norm = (s, engine = 'duckduckgo') => {
   s = s.trim();
   if (!s) return '';
   if (/^https?:\/\//i.test(s)) return s;
   if (/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(s)) return 'https://' + s;
-  return 'https://duckduckgo.com/?q=' + encodeURIComponent(s);
+  return (engine === 'brave' ? 'https://search.brave.com/search?q=' : 'https://duckduckgo.com/?q=') + encodeURIComponent(s);
 };
 
 function Browser() {
@@ -69,7 +70,7 @@ function Browser() {
   const tab = tabs.find(t => t.id === aid) || tabs[0];
   const up = (id, p) => setTabs(ts => ts.map(t => (t.id === id ? { ...t, ...p } : t)));
   const go = raw => {
-    const u = norm(raw);
+    const u = norm(raw, S.engine);
     if (u) up(tab.id, { uri: u, cur: u, title: host(u) });
   };
   const newTab = () => {
@@ -144,7 +145,7 @@ function Browser() {
               <Text style={{ color: ink, fontSize: 34, fontWeight: '600', letterSpacing: -1 }}>Search the web</Text>
               <Text style={{ color: muted, fontSize: 14, marginTop: 6, marginBottom: 18 }}>Find a page or pick up where you left off.</Text>
               <TextInput
-                placeholder="Search DuckDuckGo or enter a web address"
+                placeholder="Search the web or enter an address"
                 placeholderTextColor={muted}
                 returnKeyType="go"
                 autoCapitalize="none"
@@ -211,6 +212,16 @@ function Browser() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={{ color: ink, fontSize: 20, fontWeight: '600' }}>Customize</Text>
             <T onPress={() => setShowSet(false)} style={{ padding: 10 }}><Text style={{ color: S.accent, fontSize: 17, fontWeight: '600' }}>Done</Text></T>
+          </View>
+          {Platform.OS === 'android' && <View>
+            <H t="DEFAULT BROWSER" />
+            <Text style={{ color: muted, fontSize: 13, lineHeight: 20, marginBottom: 10 }}>Choose Orbit under Android Settings → Apps → Default apps → Browser app.</Text>
+            <Chip l="Choose Orbit as default" f={() => startActivityAsync(ActivityAction.MANAGE_DEFAULT_APPS_SETTINGS).catch(() => Linking.openSettings())} />
+          </View>}
+          <H t="SEARCH ENGINE" />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Chip l="DuckDuckGo" on={S.engine === 'duckduckgo'} f={() => setS({ ...S, engine: 'duckduckgo' })} />
+            <Chip l="Brave Search" on={S.engine === 'brave'} f={() => setS({ ...S, engine: 'brave' })} />
           </View>
           <H t="DARK MODE" />
           <Switch value={dk} onValueChange={v => setS({ ...S, dark: v })} trackColor={{ true: S.accent }} />

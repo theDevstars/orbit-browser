@@ -2,7 +2,7 @@
   "expo": {
     "name": "Orbit",
     "slug": "orbit-browser",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -27,15 +27,20 @@
             "DEFAULT"
           ]
         }
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon-foreground.png",
+        "backgroundColor": "#12131b"
+      }
     },
     "plugins": [
       [
         "expo-image-picker",
         {
-          "photosPermission": "Choose a wallpaper for Lantern."
+          "photosPermission": "Choose a wallpaper for Orbit."
         }
       ]
-    ]
+    ],
+    "icon": "./assets/icon.png"
   }
 }

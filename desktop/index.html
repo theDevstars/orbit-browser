@@ -205,6 +205,7 @@ html[data-pos=bottom] #tw{flex-direction:row}
 
 <aside id="set" aria-label="Customize" aria-hidden="true">
 <h2>Customize <button class="ib" id="close" aria-label="Close">✕</button></h2>
+<h3>SEARCH ENGINE</h3><div class="row" id="engines"></div>
 <h3>THEMES</h3><div class="row" id="themes"></div>
 <h3>WALLPAPER</h3><div class="row" id="presets"></div>
 <div class="row" style="margin-top:10px"><button class="chip" id="upl">Upload photo</button><input type="file" id="file" accept="image/*" hidden><input type="color" id="solid" aria-label="Solid color wallpaper" value="#2a2f55"></div>
@@ -217,6 +218,7 @@ html[data-pos=bottom] #tw{flex-direction:row}
 <label>Spacing <span id="pv"></span></label><input type="range" id="gap_r" min="0" max="16">
 <label>Glass opacity <span id="gv"></span></label><input type="range" id="glass_r" min="15" max="96">
 <h3>ACCENT COLOR</h3><div class="row" id="accents"></div>
+<h3>DEFAULT BROWSER</h3><p style="color:var(--muted);font-size:.82rem;line-height:1.5">Choose Orbit for web links in Windows Default Apps.</p><div class="row"><button class="chip" id="defaultBrowser">Open Windows Default Apps</button></div>
 <h3>START PAGE</h3>
 <input type="text" id="name" placeholder="Your name" aria-label="Your name">
 <div class="row" style="margin-top:10px"><button class="chip" id="clk">Show clock</button><button class="chip" id="reset">Reset all</button></div>
@@ -230,7 +232,7 @@ var STAR='<path d="M12 4l2.4 5 5.4.7-4 3.8 1 5.4-4.8-2.6-4.8 2.6 1-5.4-4-3.8 5.4
 var P=["linear-gradient(135deg,#d9dce3,#b9bec9)","linear-gradient(160deg,#e8e4de,#c9c3ba)","linear-gradient(160deg,#2b2d33,#16171b)","linear-gradient(135deg,#aab4aa,#7d887d)","linear-gradient(135deg,#3b4252,#232833)","linear-gradient(135deg,#9ea7b3,#6f7a88)","linear-gradient(160deg,#f1f0ee,#dcdad6)"];
 var AC=["auto","#a78bfa","#6ee7d2","#ff9f80","#f4ca66","#83a8ff"];
 var TH=[["Mist",{wall:{k:"p",v:0},dim:0,blur:0,glass:70,accent:"auto",theme:"light",rad:12,gap:8}],["Graphite",{wall:{k:"p",v:2},dim:0,blur:0,glass:80,accent:"auto",theme:"dark",rad:10,gap:6}],["Slate",{wall:{k:"p",v:4},dim:0,blur:0,glass:70,accent:"auto",theme:"dark",rad:14,gap:8}],["Sage",{wall:{k:"p",v:3},dim:0,blur:0,glass:70,accent:"auto",theme:"light",rad:12,gap:8}],["Paper",{wall:{k:"p",v:6},dim:0,blur:0,glass:85,accent:"auto",theme:"light",rad:6,gap:6}]];
-var D={wall:{k:"p",v:0},dim:0,blur:0,glass:70,accent:"auto",theme:"auto",name:"",clock:true,pos:"left",sw:250,rad:12,gap:8,hide:false};
+var D={wall:{k:"p",v:0},dim:0,blur:0,glass:70,accent:"auto",theme:"auto",name:"",clock:true,engine:"duckduckgo",pos:"left",sw:250,rad:12,gap:8,hide:false};
 var S=Object.assign({},D),marks=[];
 var defaults=[["DuckDuckGo","https://duckduckgo.com/"],["YouTube","https://www.youtube.com/"],["GitHub","https://github.com/"],["Reddit","https://www.reddit.com/"],["Figma","https://www.figma.com/"]];
 try{S=Object.assign({},D,JSON.parse(localStorage.getItem("orbit3-set")))}catch(e){}
@@ -244,6 +246,7 @@ function mk(p,cls,txt,fn,label){var b=document.createElement("button");b.classNa
 function chips(id,list,get,set){var h=$(id);h.innerHTML="";list.forEach(function(x){var b=mk(id,"chip",x[1],function(){set(x[0])});b.dataset.v=x[0]})}
 chips("pos",[["left","Left"],["right","Right"],["top","Top"],["bottom","Bottom"]],0,function(v){S.pos=v;apply()});
 chips("modes",[["auto","Auto"],["light","Light"],["dark","Dark"]],0,function(v){S.theme=v;apply()});
+chips("engines",[["duckduckgo","DuckDuckGo"],["brave","Brave Search"]],0,function(v){S.engine=v;apply()});
 TH.forEach(function(t){mk("themes","chip",t[0],function(){Object.assign(S,t[1]);apply()})});
 P.forEach(function(g,i){var b=mk("presets","sw","",function(){S.wall={k:"p",v:i};apply()},"Wallpaper "+(i+1));b.style.backgroundImage=g});
 AC.forEach(function(c){var b=mk("accents","sw","",function(){S.accent=c;apply()},"Accent "+c);b.style.background=c==="auto"?"linear-gradient(135deg,#3a3a40 50%,#d4d4d8 50%)":c});
@@ -260,9 +263,10 @@ R.setAttribute("data-pos",S.pos);R.setAttribute("data-hide",S.hide?"true":"false
 $("dv").textContent=S.dim+"%";$("bv").textContent=S.blur+"px";$("gv").textContent=S.glass+"%";$("sv").textContent=S.sw+"px";$("rv").textContent=S.rad+"px";$("pv").textContent=S.gap+"px";
 $("dim_r").value=S.dim;$("blur_r").value=S.blur;$("glass_r").value=S.glass;$("sw_r").value=S.sw;$("rad_r").value=S.rad;$("gap_r").value=S.gap;$("name").value=S.name;
 $("clk").classList.toggle("on",S.clock);
+$("url").placeholder="Search "+(S.engine==="brave"?"Brave Search":"DuckDuckGo")+" or enter an address";
 [].forEach.call($("presets").children,function(b,i){b.classList.toggle("on",S.wall.k==="p"&&S.wall.v===i)});
 [].forEach.call($("accents").querySelectorAll(".sw"),function(b,i){b.classList.toggle("on",S.accent===AC[i])});
-["pos","modes"].forEach(function(id){[].forEach.call($(id).children,function(b){b.classList.toggle("on",b.dataset.v===(id==="pos"?S.pos:S.theme))})});
+["pos","modes","engines"].forEach(function(id){[].forEach.call($(id).children,function(b){var v=id==="pos"?S.pos:id==="modes"?S.theme:S.engine;b.classList.toggle("on",b.dataset.v===v)})});
 persist();chrome();if(!W.c||!W.c.h[W.c.i])view();
 }
 [["dim_r","dim"],["blur_r","blur"],["glass_r","glass"],["sw_r","sw"],["rad_r","rad"],["gap_r","gap"]].forEach(function(p){$(p[0]).oninput=function(){S[p[1]]=+this.value;apply()}});
@@ -274,13 +278,14 @@ $("name").oninput=function(){S.name=this.value.slice(0,30);persist();if(!W.c.h[W
 $("clk").onclick=function(){S.clock=!S.clock;apply()};
 $("reset").onclick=function(){S=Object.assign({},D);apply()};
 $("gear").onclick=function(){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")};
+$("defaultBrowser").onclick=function(){if(window.orbit){window.orbit.defaults()}else{$("st").textContent="Open Windows Settings → Apps → Default apps to choose Orbit."}};
 $("close").onclick=function(){$("set").classList.remove("open");$("set").setAttribute("aria-hidden","true")};
 $("hide").onclick=function(){S.hide=true;apply()};
 $("peek").onclick=function(){S.hide=false;apply()};
 
 function norm(s){s=s.trim();if(!s)return"";if(/^https?:\/\//i.test(s))return s;
 if(/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(s))return"https://"+s;
-return"https://duckduckgo.com/?q="+encodeURIComponent(s)}
+return(S.engine==="brave"?"https://search.brave.com/search?q=":"https://duckduckgo.com/?q=")+encodeURIComponent(s)}
 function host(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
 function newTab(url){var t={h:[],i:-1,title:"New tab"};W.t.push(t);W.c=t;if(url)go(url);else render()}
 function go(raw){var c=W.c,u=norm(raw);if(!u)return;c.h=c.h.slice(0,c.i+1);c.h.push(u);c.i++;c.title=host(u);render()}
@@ -319,7 +324,7 @@ c.wv.style.display="flex"}
 else{
 var hr=new Date().getHours(),g=hr<5?"Good night":hr<12?"Good morning":hr<18?"Good afternoon":"Good evening";
 var d=document.createElement("div");d.id="home";
-d.innerHTML="<div class='card glass'><div class='home-eyebrow' id='date'></div><h1 class='home-title'>Search the web</h1><p class='home-subtitle'>Find a page or pick up where you left off.</p><div class='home-search'><span class='search-icon'>⌕</span><input id='hs' type='text' placeholder='Search DuckDuckGo or enter a web address' aria-label='Search'></div><div id='sites'></div><button id='home-settings'>Customize new tab</button></div>";$("date").textContent=new Intl.DateTimeFormat(undefined,{weekday:"long",month:"long",day:"numeric"}).format(new Date());$("home-settings").onclick=function(){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")};
+d.innerHTML="<div class='card glass'><div class='home-eyebrow' id='date'></div><h1 class='home-title'>Search the web</h1><p class='home-subtitle'>Find a page or pick up where you left off.</p><div class='home-search'><span class='search-icon'>⌕</span><input id='hs' type='text' placeholder='Search the web or enter an address' aria-label='Search'></div><div id='sites'></div><button id='home-settings'>Customize new tab</button></div>";$("date").textContent=new Intl.DateTimeFormat(undefined,{weekday:"long",month:"long",day:"numeric"}).format(new Date());$("home-settings").onclick=function(){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")};
 v.appendChild(d);$("greet").textContent=g+(S.name?", "+S.name:"");
 $("hs").onkeydown=function(e){if(e.key==="Enter")go(this.value)};
 marks.forEach(function(m){var b=document.createElement("button");b.className="site";var s=document.createElement("span");s.textContent=m[0];b.appendChild(fv(m[0]));b.appendChild(s);b.onclick=function(){go(m[1])};$("sites").appendChild(b)});
