@@ -1,6 +1,6 @@
 {
   "name": "orbit-browser-desktop",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Orbit Browser for Windows",
   "author": "theDevstars",
   "main": "main.js",

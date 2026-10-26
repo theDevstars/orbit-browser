@@ -34,6 +34,7 @@ function Browser() {
   const [text, setText] = useState('');
   const [showSet, setShowSet] = useState(false);
   const [settingsTab, setSettingsTab] = useState('general');
+  const [settingsQuery, setSettingsQuery] = useState('');
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTabs, setShowTabs] = useState(false);
   const [, tick] = useState(0);
@@ -46,12 +47,12 @@ function Browser() {
           const j = JSON.parse(v);
           if (j.S) setS({ ...D, ...j.S });
           if (j.marks) setMarks(j.marks);
-          AsyncStorage.getItem('orbit-welcome-v3').then(done => setShowWelcome(done !== 'done')).catch(() => {});
+          AsyncStorage.getItem('orbit-welcome-v4').then(done => setShowWelcome(done !== 'done')).catch(() => {});
         } else {
           setShowWelcome(true);
         }
       })
-      .catch(() => {})
+      .catch(() => setShowWelcome(true))
       .finally(() => setReady(true));
     const i = setInterval(() => tick(x => x + 1), 30000);
     return () => clearInterval(i);
@@ -75,9 +76,9 @@ function Browser() {
   const chooseWelcome = async style => {
     if (style === 'zen') setS(s => ({ ...s, dark: true, wall: '#101114', accent: '#72cbb5', rad: 18 }));
     if (style === 'helium') setS(s => ({ ...s, dark: false, wall: '#f1f0eb', accent: '#72cbb5', rad: 14 }));
-    await AsyncStorage.setItem('orbit-welcome-v3', 'done').catch(() => {});
+    await AsyncStorage.setItem('orbit-welcome-v4', 'done').catch(() => {});
     setShowWelcome(false);
-    if (style === 'custom') { setSettingsTab('appearance'); setShowSet(true); }
+    if (style === 'custom') { setSettingsQuery(''); setSettingsTab('appearance'); setShowSet(true); }
   };
   const tab = tabs.find(t => t.id === aid) || tabs[0];
   const up = (id, p) => setTabs(ts => ts.map(t => (t.id === id ? { ...t, ...p } : t)));
@@ -208,7 +209,7 @@ function Browser() {
           <Btn l="↻" f={() => refs.current[tab.id]?.reload()} off={!tab.uri} />
           <Btn l={pinned ? '★' : '☆'} f={star} off={!tab.cur} />
           <Btn l="+" f={newTab} />
-          <Btn l="☷" f={() => { setSettingsTab('general'); setShowSet(true); }} />
+          <Btn l="☷" f={() => { setSettingsQuery(''); setSettingsTab('general'); setShowSet(true); }} />
         </View>
       </View>
 
@@ -250,13 +251,26 @@ function Browser() {
             <Text style={{ color: ink, fontSize: 22, fontWeight: '600' }}>Settings</Text>
             <T onPress={() => setShowSet(false)} style={{ padding: 10 }}><Text style={{ color: S.accent, fontSize: 17, fontWeight: '600' }}>Done</Text></T>
           </View>
+          <TextInput
+            value={settingsQuery}
+            onChangeText={v => {
+              setSettingsQuery(v);
+              const q = v.toLowerCase();
+              if (/appearance|dark|theme|wallpaper|accent|radius|color|blur/.test(q)) setSettingsTab('appearance');
+              else if (/start|name|greeting|new tab/.test(q)) setSettingsTab('start');
+              else if (/general|search|brave|duck|browser|default|setup|zen|helium/.test(q)) setSettingsTab('general');
+            }}
+            placeholder="Search settings"
+            placeholderTextColor={muted}
+            style={{ height: 44, borderRadius: 12, borderWidth: 1, borderColor: line, color: ink, backgroundColor: glass, paddingHorizontal: 14, fontSize: 15 }}
+          />
           <View style={{ flexDirection: 'row', gap: 6, marginTop: 18, marginBottom: 10 }}>
             {[
               ['general', 'General'],
               ['appearance', 'Appearance'],
               ['start', 'Start page']
             ].map(([id, label]) => (
-              <T key={id} onPress={() => setSettingsTab(id)} style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 12, backgroundColor: settingsTab === id ? S.accent : glass }}>
+              <T key={id} onPress={() => { setSettingsQuery(''); setSettingsTab(id); }} style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 12, backgroundColor: settingsTab === id ? S.accent : glass }}>
                 <Text style={{ color: settingsTab === id ? '#10221d' : ink, fontSize: 12, fontWeight: '600' }}>{label}</Text>
               </T>
             ))}
