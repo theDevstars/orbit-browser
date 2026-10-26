@@ -114,27 +114,93 @@ html[data-tabs=open] #tw{display:flex}
 .fv{border-radius:5px;font-weight:500}
 #url{font-size:.85rem}
 webview{position:absolute;inset:0;width:100%;height:100%;background:#fff}
+
+/* Orbit layout: workspaces and tabs stay beside the page, with a quiet top address bar. */
+#app{display:grid;grid-template-columns:var(--sw) minmax(0,1fr);height:100%;padding:10px;gap:10px}
+#side{display:flex;flex-direction:column;gap:10px;padding:14px 10px;border-radius:16px;min-width:0;min-height:0;background:rgba(var(--g),.9)}
+#brand{display:flex;align-items:center;gap:9px;padding:2px 8px 10px;color:var(--ink);font-size:16px;letter-spacing:.2px}
+.brand-mark{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:var(--accent);color:var(--on);font-size:15px}
+.side-label{padding:6px 9px 0;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:1.2px}
+#ws{display:flex;flex-direction:column;gap:3px}
+.w{width:100%;display:flex;align-items:center;text-align:left;gap:9px;padding:9px;border-radius:10px;opacity:.78}
+.w:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.55}
+.w.on{background:rgba(var(--g),.9);opacity:1;color:var(--accent)}
+#ess{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.es{aspect-ratio:1;border-radius:9px;background:rgba(var(--g),.75);color:var(--ink)}
+#tw{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-height:0;flex:1}
+#tabs{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:0;overflow:auto}
+.tab{max-width:none;min-width:0;width:100%;padding:8px 9px;border-radius:9px}
+#nt{width:100%;padding:9px;text-align:left}
+#main{display:flex;flex-direction:column;min-width:0;min-height:0;gap:9px}
+#top{display:flex;align-items:center;gap:4px;flex:none;min-height:50px;padding:5px 8px;border-radius:14px}
+#url{height:36px;flex:1;flex-basis:0!important;margin:0 6px;text-align:left;background:rgba(var(--g),.55)}
+#tc{display:none}
+#view{flex:1;position:relative;min-height:0;min-width:0;border-radius:16px;overflow:hidden;background:rgba(var(--g),.16)}
+#home{padding:7vh 24px;align-items:center}
+.card{width:min(720px,100%);border-radius:17px;padding:34px 30px}
+.home-eyebrow{color:var(--muted);font-size:11px;letter-spacing:1.3px;text-transform:uppercase;margin-bottom:15px}
+.home-title{font-size:clamp(30px,4vw,44px);line-height:1.1;letter-spacing:-1.2px;margin:0 0 7px;font-weight:600}
+.home-subtitle{color:var(--muted);margin:0 0 24px;font-size:14px}
+.home-search{display:flex;align-items:center;gap:10px;width:100%;height:52px;padding:0 15px;border-radius:14px;border:1px solid var(--line);background:rgba(var(--g),.76)}
+.home-search .search-icon{font-size:19px;color:var(--muted)}
+#hs{height:48px;flex:1;width:auto;border:0;background:transparent;text-align:left;padding:0;font-size:15px}
+#hs:focus{outline:0}
+#sites{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:18px}
+.site{flex-direction:row;justify-content:flex-start;text-align:left;padding:10px 12px;border-radius:11px;font-size:12px}
+.site .fv{width:28px;height:28px;border-radius:8px;font-size:12px}
+#home-settings{margin-top:17px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}
+html[data-pos=right] #app{grid-template-columns:minmax(0,1fr) var(--sw)}
+html[data-pos=right] #side{grid-column:2;grid-row:1}
+html[data-pos=right] #main{grid-column:1;grid-row:1}
+html[data-pos=top] #app{grid-template-columns:minmax(0,1fr);grid-template-rows:160px minmax(0,1fr)}
+html[data-pos=top] #side{grid-row:1;flex-direction:row;align-items:center}
+html[data-pos=top] #main{grid-row:2}
+html[data-pos=top] #ws,html[data-pos=top] #tabs{flex-direction:row}
+html[data-pos=top] #tw{flex-direction:row}
+html[data-pos=bottom] #app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 160px}
+html[data-pos=bottom] #side{grid-row:2;flex-direction:row;align-items:center}
+html[data-pos=bottom] #main{grid-row:1}
+html[data-pos=bottom] #ws,html[data-pos=bottom] #tabs{flex-direction:row}
+html[data-pos=bottom] #tw{flex-direction:row}
+@media(max-width:700px){
+  #app{display:flex;flex-direction:column;padding:6px;gap:6px}
+  #main{order:1;flex:1}
+  #side{order:2;display:flex;flex-direction:row;align-items:center;gap:6px;padding:5px;border-radius:13px;min-height:43px}
+  #brand,.side-label,#ess{display:none}
+  #ws{flex-direction:row;justify-content:center;flex:1;gap:4px}
+  .w{width:auto;padding:7px 11px;font-size:11px;justify-content:center}
+  .w:before{display:none}
+  #tw{display:none;position:fixed;inset:0;z-index:5;flex-direction:column;align-items:stretch;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));background:rgba(var(--g),.94);backdrop-filter:blur(24px)}
+  html[data-tabs=open] #tw{display:flex}
+  #tabs{flex-direction:column;flex:1}
+  .tab{max-width:none;width:100%;padding:13px}
+  #tc{display:block;width:30px;height:30px}
+  #hide{display:none}
+  #top{flex-wrap:nowrap;min-height:48px}
+  #url{font-size:16px;height:38px}
+  .card{padding:26px 16px}
+  #sites{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
 <div id="wall"></div><div id="dim"></div>
 <button class="ib glass" id="peek" aria-label="Show sidebar">☰</button>
 <div id="app">
-<div id="side" class="glass">
-<div id="top">
-<button class="ib" id="back" aria-label="Back">←</button>
-<button class="ib" id="fwd" aria-label="Forward">→</button>
-<button class="ib" id="reload" aria-label="Reload">↻</button>
-<input id="url" type="text" placeholder="Search DuckDuckGo or enter address" aria-label="Address bar" autocapitalize="off" autocomplete="off">
-<button class="ib" id="star" aria-label="Pin this page">☆</button>
-<button class="ib" id="tc" aria-label="Show tabs">1</button>
-<button class="ib" id="gear" aria-label="Customize">⚙</button>
-<button class="ib" id="hide" aria-label="Hide sidebar">⇤</button>
-</div>
-<div id="ess"></div>
-<div id="tw"><button class="chip" id="td">Done</button><div id="tabs" role="tablist"></div><div id="ws"></div></div>
-</div>
-<div id="view"></div>
+  <aside id="side" class="glass">
+    <div id="brand"><span class="brand-mark">◉</span><strong>orbit</strong></div>
+    <div class="side-label">WORKSPACES</div><div id="ws"></div>
+    <div class="side-label pinned-label">PINNED</div><div id="ess"></div>
+    <div class="side-label tabs-label">TABS</div>
+    <div id="tw"><button class="chip" id="td">Done</button><div id="tabs" role="tablist"></div></div>
+  </aside>
+  <main id="main">
+    <div id="top" class="glass">
+      <button class="ib" id="back" aria-label="Back">←</button><button class="ib" id="fwd" aria-label="Forward">→</button><button class="ib" id="reload" aria-label="Reload">↻</button>
+      <input id="url" type="text" placeholder="Search DuckDuckGo or enter address" aria-label="Address bar" autocapitalize="off" autocomplete="off">
+      <button class="ib" id="star" aria-label="Bookmark this page">☆</button><button class="ib" id="tc" aria-label="Show tabs">1</button><button class="ib" id="gear" aria-label="Customize">⚙</button><button class="ib" id="hide" aria-label="Hide sidebar">⇤</button>
+    </div><div id="view"></div>
+  </main>
 </div>
 
 <aside id="set" aria-label="Customize" aria-hidden="true">
@@ -171,7 +237,7 @@ try{S=Object.assign({},D,JSON.parse(localStorage.getItem("orbit3-set")))}catch(e
 try{marks=JSON.parse(localStorage.getItem("orbit2-marks"))||[]}catch(e){}
 if(!marks.length)marks=defaults.slice();
 if(!marks.some(function(m){return /duckduckgo\.com/.test(m[1])}))marks.unshift(defaults[0]);
-var ws=[{e:"Home",n:"Home",t:[],c:null},{e:"Work",n:"Work",t:[],c:null},{e:"Study",n:"Study",t:[],c:null}],W=ws[0];
+var ws=[{e:"Personal",n:"Personal",t:[],c:null},{e:"Studio",n:"Studio",t:[],c:null},{e:"Research",n:"Research",t:[],c:null}],W=ws[0];
 function persist(){var ok=true;try{localStorage.setItem("orbit3-set",JSON.stringify(S));localStorage.setItem("orbit2-marks",JSON.stringify(marks))}catch(e){ok=false}
 $("st").textContent=ok?"":"Couldn’t save this wallpaper in your browser. It will reset on reload."}
 function mk(p,cls,txt,fn,label){var b=document.createElement("button");b.className=cls;if(txt)b.textContent=txt;if(label)b.setAttribute("aria-label",label);b.onclick=fn;$(p).appendChild(b);return b}
@@ -253,7 +319,7 @@ c.wv.style.display="flex"}
 else{
 var hr=new Date().getHours(),g=hr<5?"Good night":hr<12?"Good morning":hr<18?"Good afternoon":"Good evening";
 var d=document.createElement("div");d.id="home";
-d.innerHTML="<div class='card glass'><div class='home-brand'><span class='brand-icon'>◉</span><strong>Orbit</strong><span class='brand-sep'></span><span>New tab</span></div><div id='date'></div>"+(S.clock?"<div id='clock'></div>":"")+"<div id='greet'></div><input id='hs' type='text' placeholder='Search DuckDuckGo or enter a web address' aria-label='Search'><div id='sites'></div></div>";$("date").textContent=new Intl.DateTimeFormat(undefined,{weekday:"long",month:"long",day:"numeric"}).format(new Date());
+d.innerHTML="<div class='card glass'><div class='home-eyebrow' id='date'></div><h1 class='home-title'>Search the web</h1><p class='home-subtitle'>Find a page or pick up where you left off.</p><div class='home-search'><span class='search-icon'>⌕</span><input id='hs' type='text' placeholder='Search DuckDuckGo or enter a web address' aria-label='Search'></div><div id='sites'></div><button id='home-settings'>Customize new tab</button></div>";$("date").textContent=new Intl.DateTimeFormat(undefined,{weekday:"long",month:"long",day:"numeric"}).format(new Date());$("home-settings").onclick=function(){$("set").classList.add("open");$("set").setAttribute("aria-hidden","false")};
 v.appendChild(d);$("greet").textContent=g+(S.name?", "+S.name:"");
 $("hs").onkeydown=function(e){if(e.key==="Enter")go(this.value)};
 marks.forEach(function(m){var b=document.createElement("button");b.className="site";var s=document.createElement("span");s.textContent=m[0];b.appendChild(fv(m[0]));b.appendChild(s);b.onclick=function(){go(m[1])};$("sites").appendChild(b)});

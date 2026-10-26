@@ -119,7 +119,7 @@ function Browser() {
 
   const hr = new Date().getHours();
   const greet = (hr < 5 ? 'Good night' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening') + (S.name ? ', ' + S.name : '');
-  const clock = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const date = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
 
   return (
     <ImageBackground source={S.img ? { uri: S.img } : undefined} style={{ flex: 1, backgroundColor: S.wall, paddingTop: ins.top + 6, paddingHorizontal: 6, paddingBottom: ins.bottom + 6 }}>
@@ -138,10 +138,11 @@ function Browser() {
           ) : null
         )}
         {!tab.uri && (
-          <ScrollView contentContainerStyle={{ padding: 14, paddingTop: 40 }} keyboardShouldPersistTaps="handled">
-            <View style={{ backgroundColor: glass, borderRadius: S.rad + 6, padding: 24, alignItems: 'center' }}>
-              <Text style={{ color: ink, fontSize: 56, fontWeight: '500', letterSpacing: -2 }}>{clock}</Text>
-              <Text style={{ color: muted, fontSize: 16, marginVertical: 8 }}>{greet}</Text>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 30, flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
+            <View style={{ backgroundColor: glass, borderRadius: S.rad + 6, padding: 22, alignItems: 'stretch' }}>
+              <Text style={{ color: muted, fontSize: 11, fontWeight: '600', letterSpacing: 1.4, marginBottom: 12 }}>{date.toUpperCase()}</Text>
+              <Text style={{ color: ink, fontSize: 34, fontWeight: '600', letterSpacing: -1 }}>Search the web</Text>
+              <Text style={{ color: muted, fontSize: 14, marginTop: 6, marginBottom: 18 }}>Find a page or pick up where you left off.</Text>
               <TextInput
                 placeholder="Search DuckDuckGo or enter a web address"
                 placeholderTextColor={muted}
@@ -153,11 +154,11 @@ function Browser() {
               />
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 20 }}>
                 {marks.map((m, i) => (
-                  <T key={i} onPress={() => go(m[1])} style={{ width: 92, alignItems: 'center', padding: 8 }}>
-                    <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: S.accent, alignItems: 'center', justifyContent: 'center' }}>
+                  <T key={i} onPress={() => go(m[1])} style={{ width: 138, alignItems: 'flex-start', padding: 9, flexDirection: 'row', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: line, backgroundColor: 'rgba(255,255,255,0.025)' }}>
+                    <View style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: S.accent, alignItems: 'center', justifyContent: 'center' }}>
                       <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>{(m[0][0] || '?').toUpperCase()}</Text>
                     </View>
-                    <Text numberOfLines={1} style={{ color: ink, fontSize: 12, marginTop: 6 }}>{m[0]}</Text>
+                    <Text numberOfLines={1} style={{ color: ink, fontSize: 12, marginTop: 0, flexShrink: 1 }}>{m[0]}</Text>
                   </T>
                 ))}
               </View>
